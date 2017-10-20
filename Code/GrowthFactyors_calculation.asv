@@ -1,0 +1,24 @@
+%%
+conn=connect_jydb();
+setdbprefs('datareturnformat','table')
+str1=sprintf(['select * '...
+    'from ShengYunDB..V_Q_GrowthRaw order by TradingDay,InnerCode '...
+    ]);
+curs=exec(conn, str1);
+curs1=fetch(curs);
+GrowthRaw = curs1.Data;
+
+%%
+RevY=table2array(GrowthRaw(:,3:6));
+NPY=table2array(GrowthRaw(:,7:10));
+RevQ=table2array(GrowthRaw(:,11:22));
+NPQ=table2array(GrowthRaw(:,23:34));
+SEQ=table2array(GrowthRaw(:,35:46));
+TAQ=table2array(GrowthRaw(:,47:58));
+
+
+
+%%
+V=table2cell(Stat(:,{'TradingDay','InnerCode','median_CRCode','min_CRCode'}));
+%%
+write_into_sql_table(V,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_CreditRatingMonthly',conn);
