@@ -29,4 +29,4 @@ GS4=nanstd(GS4_0(:,1:11)-GS4_0(:,2:12),0,2);
 %%
 V=[table2cell(GrowthRaw(:,1:2)),num2cell([G1,G2,GS1,GS2,GS3,GS4])];
 %%
-write_into_sql_table(V,{'Datetime','Num','Num','Num','Num','Num','Num','Num'},'ShengYunDB..Q_GrowthFactors',conn);
+write_into_sql_table(V,{'Datetime','Num','Num','Num','Num','Num','Num','Num'},'ShengYunDB..Q_GrowthFactors');
