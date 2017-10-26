@@ -16,17 +16,23 @@ NPQ=table2array(GrowthRaw(:,23:34));
 SEQ=table2array(GrowthRaw(:,35:46));
 TAQ=table2array(GrowthRaw(:,47:58));
 %%
-G1=nanmean(RevY(:,1:3)./RevY(:,2:4)-1,2);
-G2=nanmean(NPY(:,1:3)./NPY(:,2:4)-1,2);
+G1=mean(RevY(:,1:3)./RevY(:,2:4)-1,2);
+X1=sum(RevY<0,2)>0;
+G1(X1)=-99;
+G2=mean(NPY(:,1:3)./abs(NPY(:,2:4))-1,2);
 
-GS1=nanstd(RevQ(:,1:11)./RevQ(:,2:12)-1,0,2);
-GS2=nanstd(NPQ(:,1:11)./NPQ(:,2:12)-1,0,2);
+GS1=std(RevQ(:,1:11)./abs(RevQ(:,2:12))-1,0,2);
+GS2=std(NPQ(:,1:11)./abs(NPQ(:,2:12))-1,0,2);
 GS3_0=NPQ./SEQ;
-GS3=nanstd(GS3_0(:,1:11)-GS3_0(:,2:12),0,2);
+XS3=SEQ<0;
+GS3_0(XS3)=nan;
+GS3=std(GS3_0(:,1:11)-GS3_0(:,2:12),0,2);
+ROE_M3=mean(GS3_0,2);
 GS4_0=NPQ./TAQ;
-GS4=nanstd(GS4_0(:,1:11)-GS4_0(:,2:12),0,2);
+GS4=std(GS4_0(:,1:11)-GS4_0(:,2:12),0,2);
+ROA_M3=mean(GS4_0,2);
 
 %%
-V=[table2cell(GrowthRaw(:,1:2)),num2cell([G1,G2,GS1,GS2,GS3,GS4])];
+V=[table2cell(GrowthRaw(:,1:2)),num2cell([G1,G2,GS1,GS2,GS3,GS4,ROE_M3,ROA_M3])];
 %%
-write_into_sql_table(V,{'Datetime','Num','Num','Num','Num','Num','Num','Num'},'ShengYunDB..Q_GrowthFactors');
+write_into_sql_table(V,{'Datetime','Num','Num','Num','Num','Num','Num','Num','Num','Num'},'ShengYunDB..Q_GrowthFactors',conn);
