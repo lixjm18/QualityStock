@@ -1,3 +1,4 @@
+drop view V_Q_Add2Raw
 create view V_Q_Add2Raw as
 select A.TradingDay
 ,C.InnerCode
@@ -5,6 +6,9 @@ select A.TradingDay
 ,B.FCFF
 ,B_LA.FCFF as FCFF_LA
 ,B_LY2.FCFF as FCFF_LY
+,B.EBITDA
+,B_LA.EBITDA as EBITDA_LA
+,B_LY2.EBITDA as EBITDA_LY
 ,J.ClosePrice*J.TotalShares as MKTCap
 ,B.InterestBearDebt
 ,D.TotalLiability
@@ -59,10 +63,65 @@ on J.TradingDay=A.TradingDay
 and J.InnerCode=C.InnerCode
 where A.TradingDay<=GETDATE()
 
+drop view V_Q_Add3
+create view V_Q_Add3 as
+select TradingDay,InnerCode
+,(FCFF+FCFF_LA-FCFF_LY)/(MKTCap+TotalLiability+MinorityInterests+EPreferStock-CashEquivalents) as FCFF2EV
+,case when TotalOperatingRevenueTTM<=0 then null else (((TotalCurrentAssets-CashEquivalents)-(TotalCurrentLiability-NotesPayable-NonCurrentLiabilityIn1Year))-((TotalCurrentAssets_LY-CashEquivalents_LY)-(TotalCurrentLiability_LY-NotesPayable_LY-NonCurrentLiabilityIn1Year_LY)))/TotalOperatingRevenueTTM end as NWC2TR
+,EBITDA+EBITDA_LA-EBITDA_LY as EBITDA_LTM
+,MKTCap+TotalLiability+MinorityInterests+EPreferStock-CashEquivalents as EV
+,(EBITDA+EBITDA_LA-EBITDA_LY)/(MKTCap+TotalLiability+MinorityInterests+EPreferStock-CashEquivalents) as EBITDA2EV
+from V_Q_Add2Raw
+order by InnerCode,TradingDay
+
+Create view V_Q_All as
+select A.*
+,B.G1,B.G2,B.GS1,B.GS2,B.GS3,B.GS4,B.ROE_M3,B.ROA_M3
+,C.E2P_M3,C.B2P_M3
+,D.FCFF2EV,D.NWC2TR,D.EBITDA2EV
+from ShengYunDB..V_Q_NonGrowth A
+left join ShengYunDB..Q_GrowthFactors B
+on A.InnerCode=B.InnerCode
+and A.TradingDay=B.TradingDay
+left join ShengYunDB..Q_M3 C
+on C.InnerCode=A.InnerCode
+and C.TradingDay=A.TradingDay
+left join ShengYunDB..V_Q_Add3 D
+on D.InnerCode=A.InnerCode and D.TradingDay=A.TradingDay
+
+select *
+from V_Q_All
+where TradingDay='2017-09-29'
+order by G2 desc
+
+V_Q_Add3
+
+select *
+from V_Q_Add3
+where InnerCode=1492
+order by InnerCode,TradingDay
+
+select EndDate,FCFF,EBITDA
+from JYDB..LC_FSDerivedData
+where CompanyCode=(select CompanyCode from ShengYunDB..V_A_Stock_Universe where InnerCode=1492)
+order by EndDate
+
+
+select *
+from V_Q_Add3
+where InnerCode=160
+order by TradingDay
 
 select TradingDay,InnerCode
-,(FCFF+FCFF_LA-FCFF_LY)/(MKTCap+InterestBearDebt+MinorityInterests+EPreferStock-CashEquivalents) as FCFF2EV
 ,case when TotalOperatingRevenueTTM<=0 then null else (((TotalCurrentAssets-CashEquivalents)-(TotalCurrentLiability-NotesPayable-NonCurrentLiabilityIn1Year))-((TotalCurrentAssets_LY-CashEquivalents_LY)-(TotalCurrentLiability_LY-NotesPayable_LY-NonCurrentLiabilityIn1Year_LY)))/TotalOperatingRevenueTTM end as NWC2TR
+,TotalOperatingRevenueTTM
+,TotalCurrentAssets,
+CashEquivalents,
+(TotalCurrentLiability-NotesPayable-NonCurrentLiabilityIn1Year)
+,(TotalCurrentAssets_LY-CashEquivalents_LY),
+(TotalCurrentLiability_LY-NotesPayable_LY-NonCurrentLiabilityIn1Year_LY)
 from V_Q_Add2Raw
-order by TradingDay,InnerCode
+where InnerCode=160
+order by InnerCode,TradingDay
+
 

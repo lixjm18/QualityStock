@@ -29,4 +29,8 @@ for i1=1:length(CodeList)
     end
 end
 
-write_into_sql_table(M3_Cell,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_M3',conn);
+
+%%
+tic
+write_into_sql_table(M3_Cell,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_M3Every2Week',conn);
+toc

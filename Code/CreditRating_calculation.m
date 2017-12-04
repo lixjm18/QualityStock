@@ -2,7 +2,7 @@
 conn=connect_jydb();
 setdbprefs('datareturnformat','table')
 str1=sprintf(['select * '...
-    'from ShengYunDB..V_CreditRating_Monthly order by TradingDay,InnerCode '...
+    'from ShengYunDB..V_CreditRating_Every2Week order by TradingDay,InnerCode '...
     ]);
 curs=exec(conn, str1);
 curs1=fetch(curs);
@@ -13,4 +13,5 @@ Stat = grpstats(RatingRaw,{'TradingDay','InnerCode'},{'median','min'},'DataVars'
 %%
 V=table2cell(Stat(:,{'TradingDay','InnerCode','median_CRCode','min_CRCode'}));
 %%
-write_into_sql_table(V,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_CreditRatingMonthly',conn);
+% write_into_sql_table(V,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_CreditRatingMonthly',conn);
+write_into_sql_table(V,{'Datetime','Num','Num','Num'},'ShengYunDB..Q_CreditRatingEvery2Week',conn);
